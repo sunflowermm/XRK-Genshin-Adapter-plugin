@@ -1,0 +1,7 @@
+{
+  "name": "xrk-core",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "XRK Core Plugin",
+  "main": "index.js"
+}
