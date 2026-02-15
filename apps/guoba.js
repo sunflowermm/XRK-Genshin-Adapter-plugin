@@ -1,6 +1,9 @@
 import path from 'path'
 import fs from 'fs/promises'
+import { fileURLToPath } from 'url'
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const pluginRoot = path.resolve(__dirname, '..')
 const getServerConfigPath = (port, filename) => `data/server_bots/${port}/${filename}`
 
 export class guobaApp extends plugin {
@@ -28,8 +31,8 @@ export class guobaApp extends plugin {
     try {
       const configPath = path.join(process.cwd(), 'plugins/guoba-plugin/server/service/v3/config/model/useConfig.js')
       const miaoConfigPath = path.join(process.cwd(), 'plugins/guoba-plugin/server/service/v3/config/model/useMiaoConfig.js')
-      const commonPath = path.join(process.cwd(), 'plugins/XRK-Core/conponents/guoba_common.js')
-      const supportXrkPath = path.join(process.cwd(), 'plugins/XRK-Core/conponents/guoba_supportxrk.js')
+      const commonPath = path.join(pluginRoot, 'conponents/guoba_common.js')
+      const supportXrkPath = path.join(pluginRoot, 'conponents/guoba_supportxrk.js')
 
       if (!await fs.access(configPath).then(() => true).catch(() => false)) {
         e.reply('锅巴配置文件不存在，无法更新', true)
