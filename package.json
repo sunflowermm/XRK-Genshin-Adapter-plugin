@@ -1,7 +1,7 @@
 {
-  "name": "xrk-core",
+  "name": "xrk-genshin-adapter-plugin",
   "type": "module",
   "version": "1.0.0",
-  "description": "XRK Core Plugin",
+  "description": "XRK-Genshin-Adapter-plugin",
   "main": "index.js"
 }
