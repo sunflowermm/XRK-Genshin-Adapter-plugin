@@ -15,14 +15,7 @@
 
 ## 安装
 
-将本插件放入 Yunzai 的 `plugins` 目录下，确保目录名为 `XRK-Genshin-Adapter-plugin`。
-
-```bash
-# 在项目 plugins 目录下
-git clone <本仓库地址> XRK-Genshin-Adapter-plugin
-```
-
-安装依赖后重启 Bot。
+在 **XRK-Yunzai** 项目内发送「向日葵妈咪妈咪哄」或「#向日葵妈咪妈咪哄」自动下载/更新本插件及向日葵插件（GitCode 失败会切 GitHub）。QQ 需主人权限；终端/stdin、Web 控制台、API 默认主人。不单独打依赖，用本体即可。装完重启 Bot。
 
 ## 使用
 
