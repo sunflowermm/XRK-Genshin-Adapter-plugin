@@ -5,6 +5,24 @@ import lodash from "lodash"
 
 let gsCfg, MysApi, MysInfo, NoteUser, MysUser, Version
 
+/**
+ * 按当前事件游戏上下文写入 MysApi option.game（原神 / 星铁 / 绝区零）
+ * @param {Object} option
+ * @param {Object} e
+ * @param {boolean} isSr 兼容 TRSS 第三参数
+ */
+function applyGameOption(option = {}, e, isSr = false) {
+  if (option.game) return option
+
+  if (isSr || e?.isSr || e?.game === 'sr') {
+    option.game = 'sr'
+  } else if (e?.isZzz || e?.game === 'zzz') {
+    option.game = 'zzz'
+  }
+
+  return option
+}
+
 // 动态导入原神相关模块
 async function loadGenshinModules() {
   try {
@@ -169,7 +187,7 @@ export default class GenshinExtension {
     
     let mys = await this.getMysInfo(targetType)
     if (mys.uid && mys?.ckInfo?.ck) {
-      if (isSr) option.game = "sr"
+      applyGameOption(option, this.e, isSr)
       return new MysApi(mys.uid, mys.ckInfo.ck, option)
     }
     return false
@@ -186,7 +204,7 @@ export default class GenshinExtension {
   createMysApi(uid, ck, option, isSr = false) {
     if (!MysApi) return null
     
-    if (isSr) option.game = "sr"
+    applyGameOption(option, this.e, isSr)
     return new MysApi(uid, ck, option)
   }
 
@@ -209,32 +227,4 @@ export default class GenshinExtension {
       elemLayout: layoutPath + "elem.html"
     }
   }
-}
-
-/**
- * 创建向后兼容的代理
- * 使得 e.runtime 可以直接访问原神扩展的属性
- */
-export function createCompatibilityProxy(runtime) {
-  return new Proxy(runtime, {
-    get(target, prop) {
-      // 先检查runtime自身的属性
-      if (prop in target) {
-        return target[prop]
-      }
-      
-      // 再检查game扩展的属性
-      const gameExt = target.getExtension('game')
-      if (gameExt && prop in gameExt) {
-        // 如果是方法，绑定正确的this
-        const value = gameExt[prop]
-        if (typeof value === 'function') {
-          return value.bind(gameExt)
-        }
-        return value
-      }
-      
-      return undefined
-    }
-  })
 }

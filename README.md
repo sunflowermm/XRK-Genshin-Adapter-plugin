@@ -4,9 +4,9 @@
 
 ## 功能
 
-- **Runtime 游戏扩展**：注册原神相关扩展（`game`），供依赖 `e.runtime.getExtension('game')` 的插件使用。
+- **Runtime 游戏扩展**：注册原神相关扩展（`game`），将 `getMysApi` / `NoteUser` 等 TRSS 能力挂到 `e.runtime`。
+- **多游戏前缀**：星铁（`*`/`#星铁` 等）、绝区零（`%`/`#绝区零` 等）由本体 `loader` 在 `Runtime.init` 前标准化，并设置 `e.game` / `e.isSr` / `e.isZzz`。
 - **锅巴配置同步**：`#锅巴登录` 将本插件内的锅巴配置模板同步到 `guoba-plugin` 的配置模型中。
-- **原神配置**：在锅巴面板中提供原神相关配置项（米游社、十连等），需配合锅巴插件与原神插件使用。
 
 ## 依赖
 
@@ -28,8 +28,7 @@
 XRK-Genshin-Adapter-plugin/
 ├── apps/
 │   ├── guoba.js        # 锅巴配置应用（#锅巴登录）
-│   ├── Genshin.js      # 原神 Runtime 扩展
-│   └── game-handler.js # 游戏相关处理
+│   └── Genshin.js      # 原神 Runtime 扩展（NoteUser / MysApi）
 ├── conponents/
 │   ├── guoba_common.js    # 锅巴配置模板（基础/群组/原神等）
 │   └── guoba_supportxrk.js
