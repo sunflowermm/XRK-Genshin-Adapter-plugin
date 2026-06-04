@@ -1,47 +1,41 @@
 # XRK-Genshin-Adapter-Plugin
 
-原神相关功能与锅巴配置的 XRK-Yunzai 适配插件，提供 Runtime 游戏扩展与锅巴配置同步。
+锅巴配置同步插件。米游社 `e.runtime`（`getMysApi`、`NoteUser` 等）与星铁/绝区零前缀由本体 `lib/plugins/runtime.js`、`lib/plugins/loader.js` 按 TRSS-Yunzai 对齐实现。
 
 ## 功能
 
-- **Runtime 游戏扩展**：注册原神相关扩展（`game`），将 `getMysApi` / `NoteUser` 等 TRSS 能力挂到 `e.runtime`。
-- **多游戏前缀**：星铁（`*`/`#星铁` 等）、绝区零（`%`/`#绝区零` 等）由本体 `loader` 在 `Runtime.init` 前标准化，并设置 `e.game` / `e.isSr` / `e.isZzz`。
-- **锅巴配置同步**：`#锅巴登录` 将本插件内的锅巴配置模板同步到 `guoba-plugin` 的配置模型中。
+- **锅巴配置同步**：`#锅巴登录` 将本插件内的锅巴模板写入 `guoba-plugin` 的 `useConfig.js` / `useMiaoConfig.js`。
+- **XRK 全量字段**：端口级 `bot` / `group` / `other` / `server`、全局 `redis` / `device` / `monitor` / `notice` / `db` / `aistream`，路径与 `lib/config/config-constants.js` 一致。
+- **向日葵插件**：在 `plugins/XRK-plugin/guoba.support.js` 中声明 `supportGuoba()`，由锅巴自动扫描；勿在适配器里重复写向日葵配置。
 
 ## 依赖
 
-- [guoba-plugin](https://github.com/guoba-yunzai/guoba-plugin)（锅巴面板）
-- 原神插件（如 [genshin](https://github.com/yoimiya-kokomi/miao-plugin) 相关能力），需安装在 `plugins/genshin` 或通过 `#guoba.adapter` 等提供 `hasGenshin`、`isTRSS`。
+- [guoba-plugin](https://github.com/guoba-yunzai/guoba-plugin)（锅巴面板；未安装时 `#锅巴登录` 会提示改用 XRK 控制台 `/xrk`）
+- 原神插件（可选）：`plugins/genshin` 存在时锅巴显示「原神配置」页
 
 ## 安装
 
-在 **XRK-Yunzai** 项目内发送「向日葵妈咪妈咪哄」或「#向日葵妈咪妈咪哄」自动下载/更新本插件及向日葵插件（GitCode 失败会切 GitHub）。QQ 需主人权限；终端/stdin、Web 控制台、API 默认主人。不单独打依赖，用本体即可。装完重启 Bot。
+在 **XRK-Yunzai** 内发送「向日葵妈咪妈咪哄」或「#向日葵妈咪妈咪哄」安装/更新本插件与 XRK-plugin。装完后重启 Bot，再发 **#锅巴登录** 同步锅巴模板。
 
 ## 使用
 
-- 发送 **#锅巴登录**：根据当前 Bot 账号与端口，将本插件的锅巴配置模板写入锅巴插件的配置模型，写入后需重启 Bot 生效。
-- 原神扩展由 Runtime 自动注册，无需单独指令。
+| 命令 | 说明 |
+|------|------|
+| `#锅巴登录` | 按当前端口写入锅巴配置模型，需重启后生效 |
+| XRK 控制台 | 未装锅巴时，在 Web `/xrk` 编辑与 CommonConfig 相同的 YAML |
 
 ## 目录结构
 
 ```
 XRK-Genshin-Adapter-plugin/
-├── apps/
-│   ├── guoba.js        # 锅巴配置应用（#锅巴登录）
-│   └── Genshin.js      # 原神 Runtime 扩展（NoteUser / MysApi）
+├── apps/guoba.js              # #锅巴登录
 ├── conponents/
-│   ├── guoba_common.js    # 锅巴配置模板（基础/群组/原神等）
-│   └── guoba_supportxrk.js
-├── index.js
-├── package.json
-├── README.md
-└── LICENSE
+│   ├── guoba_common.js        # 锅巴主模板（tabs + configFile）
+│   ├── guoba_supportxrk.js    # bot/group/other 扩展字段
+│   └── guoba_globalxrk.js     # 全局配置 tab
+└── index.js
 ```
-
-## 配置
-
-原神相关配置在锅巴面板中操作，包括米游社 Cookie、十连、签到等。配置写入路径依赖锅巴插件与 `data/server_bots/<port>/` 下的 YAML 文件。
 
 ## 许可证
 
-MIT License，见 [LICENSE](./LICENSE) 文件。
+MIT License

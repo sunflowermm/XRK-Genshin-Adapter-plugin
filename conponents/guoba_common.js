@@ -1,16 +1,12 @@
-// todo adapter
-import loader from '../../../../../../../lib/plugins/loader.js'
-import { hasGenshin, isTRSS } from '#guoba.adapter'
+import path from 'path'
+import loader from '../../../../lib/plugins/loader.js'
+import { FileUtils } from '../../../../lib/utils/file-utils.js'
+import * as CfgAdapter from './guoba_supportxrk.js'
+import { globalConfigTab, globalConfigFile } from './guoba_globalxrk.js'
 
-const CfgAdapter = await (() => {
-  if (isTRSS) {
-    return import('./useTRSSConfig.js')
-  } else {
-    return import('./useMiaoConfig.js')
-  }
-})()
+const hasGenshin = FileUtils.existsSync(path.join(process.cwd(), 'plugins/genshin'))
 
-const addGroupPromptProps = CfgAdapter['addGroupPromptProps']
+const addGroupPromptProps = CfgAdapter.addGroupPromptProps
 
 // 基础配置
 const baseConfig = {
@@ -72,11 +68,12 @@ const baseConfig = {
         ...(CfgAdapter['baseConfig'].bot ?? []),
         {
           field: 'online_msg_exp',
-          label: '推送帮助冷却',
-          bottomHelpMessage: '填上线推送通知的冷却时间',
+          label: '上线推送冷却',
+          bottomHelpMessage: 'Bot 上线后在此时间内不重复推送（秒）',
           component: 'InputNumber',
           componentProps: {
-            placeholder: '（分钟）',
+            min: 0,
+            placeholder: '秒，默认 86400',
           },
         },
         {
@@ -133,22 +130,38 @@ const baseConfig = {
           },
         },
         {
-          field: 'https.key',
-          label: 'SSL证书key路径',
-          bottomHelpMessage: '指向私钥文件的路径，必须是有效的文件路径',
+          field: 'server.name',
+          label: '服务器名称',
           component: 'Input',
-          componentProps: {
-            placeholder: '请输入SSL证书key文件路径，例如: /path/to/key.pem',
-          },
+          componentProps: { placeholder: 'XRK Server' },
         },
         {
-          field: 'https.cert',
-          label: 'SSL证书cert路径',
-          bottomHelpMessage: '指向证书文件的路径，必须是有效的文件路径',
+          field: 'server.host',
+          label: '监听地址',
+          bottomHelpMessage: '0.0.0.0 或 127.0.0.1',
           component: 'Input',
-          componentProps: {
-            placeholder: '请输入SSL证书cert文件路径，例如: /path/to/cert.pem',
-          },
+        },
+        {
+          field: 'server.url',
+          label: '外部访问 URL',
+          component: 'Input',
+        },
+        {
+          field: 'proxy.enabled',
+          label: '启用反向代理',
+          component: 'Switch',
+        },
+        {
+          field: 'https.certificate.key',
+          label: 'SSL 私钥路径',
+          component: 'Input',
+          componentProps: { placeholder: '/path/to/key.pem' },
+        },
+        {
+          field: 'https.certificate.cert',
+          label: 'SSL 证书路径',
+          component: 'Input',
+          componentProps: { placeholder: '/path/to/cert.pem' },
         },
         {
           field: 'auth',
@@ -161,26 +174,6 @@ const baseConfig = {
             placeholder: '格式为 "键:值"，例如 "Authorization:Bearer your-token"',
           },
         },
-        {
-          field: 'url',
-          label: '服务器URL',
-          bottomHelpMessage: '指定服务器的URL地址，如果配置了该项，则使用此URL；否则根据监听地址自动生成',
-          component: 'Input',
-          componentProps: {
-            placeholder: '请输入服务器URL，例如: http://localhost:8080 或 https://example.com',
-            defaultValue: 'http://127.0.0.1',
-          },
-        },
-        {
-          field: 'name',
-          label: '网站名称',
-          bottomHelpMessage: '设置WWW服务的名称',
-          component: 'Input',
-          componentProps: {
-            placeholder: '请输入网站名称',
-            defaultValue: '帅哥 Webserver',
-          },
-        }
       ]
     },
     {
@@ -504,12 +497,8 @@ const otherConfig = {
 }
 
 export function getConfigTabs() {
-  let tabs = []
-  tabs.push(baseConfig)
-  tabs.push(groupConfig())
-  if (hasGenshin) {
-    tabs.push(genshinConfig)
-  }
+  const tabs = [baseConfig, groupConfig(), globalConfigTab]
+  if (hasGenshin) tabs.push(genshinConfig)
   tabs.push(otherConfig)
   return tabs
 }
@@ -521,6 +510,7 @@ export const configFile = {
   'system.redis': '${botredis}',
   'system.other': '${botother}',
   'system.server': '${botserver}',
+  ...globalConfigFile,
 
   'genshin.gacha': '/plugins/genshin/config/gacha.set.yaml',
   'genshin.mys.pubCk': '/plugins/genshin/config/mys.pubCk.yaml',
