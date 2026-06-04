@@ -14,6 +14,7 @@ const GUOBA_USE_CONFIG = `${GUOBA_MODEL_DIR}/useConfig.js`
 const GUOBA_USE_MIAO = `${GUOBA_MODEL_DIR}/useMiaoConfig.js`
 const GUOBA_SUPPORT_XRK = `${GUOBA_MODEL_DIR}/guoba_supportxrk.js`
 const GUOBA_GLOBAL_XRK = `${GUOBA_MODEL_DIR}/guoba_globalxrk.js`
+const GUOBA_SCHEMA_XRK = `${GUOBA_MODEL_DIR}/guoba_schema_xrk.js`
 
 function applyPathPlaceholders(content, port) {
   const p = port ?? global.serverPort ?? process.argv[3]
@@ -69,12 +70,13 @@ export class guobaApp extends plugin {
         return
       }
 
-      const [commonContent, supportXrkContent, globalXrkContent] = await Promise.all([
+      const [commonContent, supportXrkContent, globalXrkContent, schemaXrkContent] = await Promise.all([
         FileUtils.readFile(commonPath, 'utf8'),
         FileUtils.readFile(supportXrkPath, 'utf8'),
-        FileUtils.readFile(globalXrkPath, 'utf8')
+        FileUtils.readFile(globalXrkPath, 'utf8'),
+        FileUtils.readFile(schemaXrkPath, 'utf8')
       ])
-      if (!commonContent || !supportXrkContent || !globalXrkContent) {
+      if (!commonContent || !supportXrkContent || !globalXrkContent || !schemaXrkContent) {
         await e.reply('读取锅巴模板失败，请检查适配器 conponents 目录是否完整', true)
         return
       }
@@ -95,6 +97,7 @@ export class guobaApp extends plugin {
       await syncFile(configPath, newConfig)
       await syncFile(supportDestPath, newSupportXrk)
       await syncFile(globalDestPath, newGlobalXrk)
+      await syncFile(schemaDestPath, schemaXrkContent)
       if (FileUtils.existsSync(miaoConfigPath)) {
         await syncFile(miaoConfigPath, newMiaoConfig)
       }

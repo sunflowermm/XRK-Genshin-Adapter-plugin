@@ -1,4 +1,5 @@
-// XRK-Yunzai 锅巴字段扩展（与 config/default_config、system-plugin/commonconfig 对齐）
+// XRK-Yunzai 锅巴字段（bot / group / other），与 commonconfig 对齐
+import { botSchemas, groupExtraSchemas } from './guoba_schema_xrk.js'
 
 export const addGroupPromptProps = {
   content: '请输入群号：',
@@ -21,83 +22,7 @@ export const addUserPromptProps = tip => ({
 })
 
 export const baseConfig = {
-  bot: [
-    {
-      field: 'debug',
-      label: '调试输出',
-      bottomHelpMessage: '是否输出调试信息（如错误堆栈）',
-      component: 'Switch',
-    },
-    {
-      field: 'ignore_self',
-      label: '过滤自己',
-      bottomHelpMessage: '群聊和频道中是否过滤自己的消息',
-      component: 'Switch',
-    },
-    {
-      field: '/→#',
-      label: '斜杠转井号',
-      bottomHelpMessage: '是否自动把 / 换成 #',
-      component: 'Switch',
-    },
-    {
-      field: 'file_watch',
-      label: '监听文件变化',
-      bottomHelpMessage: '插件/配置变更时热重载',
-      component: 'Switch',
-    },
-    {
-      field: 'cache_group_member',
-      label: '缓存群成员',
-      component: 'Switch',
-    },
-    {
-      field: 'log_max_days',
-      label: '主日志保留天数',
-      component: 'InputNumber',
-      componentProps: { min: 1 },
-    },
-    {
-      field: 'log_trace_days',
-      label: 'trace 日志保留天数',
-      component: 'InputNumber',
-      componentProps: { min: 1 },
-    },
-    {
-      field: 'log_id_length',
-      label: '日志 ID 长度',
-      component: 'InputNumber',
-      componentProps: { min: 1, max: 64 },
-    },
-    {
-      field: 'log_id_filler',
-      label: 'ID 填充字符',
-      component: 'Select',
-      componentProps: {
-        options: [
-          { label: '.', value: '.' },
-          { label: '·', value: '·' },
-          { label: '─', value: '─' },
-          { label: '•', value: '•' },
-          { label: '═', value: '═' },
-          { label: '»', value: '»' },
-          { label: '→', value: '→' },
-        ],
-      },
-    },
-    {
-      field: 'file_to_url_time',
-      label: '文件 URL 有效时间(分钟)',
-      component: 'InputNumber',
-      componentProps: { min: 1 },
-    },
-    {
-      field: 'file_to_url_times',
-      label: '文件 URL 访问次数',
-      component: 'InputNumber',
-      componentProps: { min: 1 },
-    },
-  ],
+  bot: botSchemas,
 }
 
 export const groupConfig = {
@@ -164,6 +89,7 @@ export const groupConfig = {
       component: 'InputNumber',
       componentProps: { min: 0 },
     },
+    ...groupExtraSchemas,
   ],
 }
 
@@ -177,9 +103,40 @@ export const otherConfig = {
       componentProps: { placeholder: '请选择主人QQ号' },
     },
     {
+      field: 'autoFriend',
+      label: '自动同意加好友',
+      bottomHelpMessage: '1-同意 0-不处理',
+      component: 'RadioGroup',
+      componentProps: {
+        options: [
+          { label: '不处理', value: 0 },
+          { label: '自动同意', value: 1 },
+        ],
+      },
+    },
+    {
+      field: 'autoQuit',
+      label: '自动退群人数',
+      bottomHelpMessage: '被拉进群时人数小于此值自动退出，0 不处理',
+      component: 'InputNumber',
+      componentProps: { min: 0 },
+    },
+    {
       field: 'disableGuildMsg',
       label: '禁用频道消息',
       component: 'Switch',
+    },
+    {
+      field: 'disablePrivate',
+      label: '禁用私聊',
+      bottomHelpMessage: '为 true 时私聊仅通行关键词或主人',
+      component: 'Switch',
+    },
+    {
+      field: 'disableMsg',
+      label: '禁用私聊提示',
+      component: 'Input',
+      componentProps: { placeholder: '私聊功能已禁用' },
     },
     {
       field: 'qq',
@@ -189,16 +146,24 @@ export const otherConfig = {
       componentProps: { min: 0 },
     },
     {
-      field: 'blackQQ',
-      label: '黑名单QQ',
+      field: 'disableAdopt',
+      label: '私聊通行字符串',
+      bottomHelpMessage: '消息包含任一词时不受私聊禁用限制',
       component: 'GTags',
-      componentProps: {
-        allowAdd: true,
-        allowDel: true,
-        showPrompt: true,
-        promptProps: addUserPromptProps('黑名单'),
-        valueFormatter: ((value) => Number.parseInt(value)).toString(),
-      },
+      componentProps: { allowAdd: true, allowDel: true },
+    },
+    {
+      field: 'whiteGroup',
+      label: '白名单群',
+      bottomHelpMessage: '配置后仅在这些群响应；空为不限制',
+      component: 'GSelectGroup',
+      componentProps: { placeholder: '请选择白名单群' },
+    },
+    {
+      field: 'blackGroup',
+      label: '黑名单群',
+      component: 'GSelectGroup',
+      componentProps: { placeholder: '请选择黑名单群' },
     },
     {
       field: 'whiteQQ',
@@ -209,6 +174,18 @@ export const otherConfig = {
         allowDel: true,
         showPrompt: true,
         promptProps: addUserPromptProps('白名单'),
+        valueFormatter: ((value) => Number.parseInt(value)).toString(),
+      },
+    },
+    {
+      field: 'blackQQ',
+      label: '黑名单QQ',
+      component: 'GTags',
+      componentProps: {
+        allowAdd: true,
+        allowDel: true,
+        showPrompt: true,
+        promptProps: addUserPromptProps('黑名单'),
         valueFormatter: ((value) => Number.parseInt(value)).toString(),
       },
     },

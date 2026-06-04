@@ -3,6 +3,7 @@ import fs from 'fs'
 import { pathToFileURL } from 'url'
 import * as CfgAdapter from './guoba_supportxrk.js'
 import { globalConfigTab, globalConfigFile } from './guoba_globalxrk.js'
+import { serverSchemas } from './guoba_schema_xrk.js'
 
 const root = process.cwd()
 const configConstants = await import(pathToFileURL(path.join(root, 'lib/config/config-constants.js')).href)
@@ -26,156 +27,13 @@ const baseConfig = {
       key: 'system.bot',
       title: '机器人配置',
       desc: '对机器人进行相关配置',
-      schemas: [
-        {
-          field: 'log_level',
-          label: '日志等级',
-          bottomHelpMessage: '日志输出等级。Mark时只显示执行命令，不显示聊天记录',
-          component: 'Select',
-          componentProps: {
-            options: [
-              { label: 'Trace', value: 'trace' },
-              { label: 'Debug', value: 'debug' },
-              { label: 'Info', value: 'info' },
-              { label: 'Warn', value: 'warn' },
-              { label: 'Fatal', value: 'fatal' },
-              { label: 'Mark', value: 'mark' },
-              { label: 'Error', value: 'error' },
-              { label: 'Success', value: 'success' },
-              { label: 'Tip', value: 'tip' },
-            ],
-            placeholder: '请选择日志等级',
-          },
-        },
-        {
-          field: 'log_align',
-          label: '日志头内容',
-          bottomHelpMessage: '日志头内容自定义显示，例如设置为"MYBOT"将显示[MYBOT]',
-          component: 'Input',
-          componentProps: {
-            placeholder: '请输入日志头内容',
-          },
-        },
-        {
-          field: 'log_color',
-          label: '日志头颜色方案',
-          bottomHelpMessage: '选择日志头的颜色主题',
-          component: 'Select',
-          componentProps: {
-            options: [
-              { label: '默认蓝系', value: 'default' },
-              { label: '红橙黄绿蓝', value: 'scheme1' },
-              { label: '粉色系', value: 'scheme2' },
-              { label: '蓝绿色系', value: 'scheme3' },
-              { label: '紫色系', value: 'scheme4' },
-              { label: '天空渐变', value: 'scheme5' },
-              { label: '火焰渐变', value: 'scheme6' },
-              { label: '绿野渐变', value: 'scheme7' },
-            ],
-            placeholder: '请选择颜色方案',
-          },
-        },
-        ...(CfgAdapter['baseConfig'].bot ?? []),
-        {
-          field: 'online_msg_exp',
-          label: '上线推送冷却',
-          bottomHelpMessage: 'Bot 上线后在此时间内不重复推送（秒）',
-          component: 'InputNumber',
-          componentProps: {
-            min: 0,
-            placeholder: '秒，默认 86400',
-          },
-        },
-        {
-          field: 'chromium_path',
-          label: 'chromium路径',
-          bottomHelpMessage: 'chromium其他路径，默认无需填写，需要时可填写chromium的可执行文件绝对路径',
-          component: 'Input',
-          componentProps: {
-            placeholder: '请输入chromium路径',
-          },
-        },
-        {
-          field: 'puppeteer_ws',
-          label: 'puppeteer接口地址',
-          bottomHelpMessage: 'puppeteer接口地址，默认无需填写',
-          component: 'Input',
-          componentProps: {
-            placeholder: '请输入puppeteer接口地址',
-          },
-        },
-        {
-          field: 'puppeteer_timeout',
-          label: 'puppeteer截图超时时间',
-          bottomHelpMessage: 'puppeteer截图超时时间，默认无需填写',
-          component: 'InputNumber',
-          componentProps: {
-            min: 0,
-            placeholder: '（毫秒）',
-          },
-        },
-      ],
+      schemas: [...(CfgAdapter.baseConfig?.bot ?? [])],
     },
     {
       key: 'system.server',
       title: 'server相关配置',
       desc: '对服务器进行相关配置',
-      schemas: [
-        {
-          field: 'https.enabled',
-          label: 'HTTPS开启',
-          bottomHelpMessage: '是否启用HTTPS服务器，设置为true时需提供有效的key和cert文件路径',
-          component: 'Switch',
-          componentProps: {
-            defaultValue: false,
-          },
-        },
-        {
-          field: 'server.name',
-          label: '服务器名称',
-          component: 'Input',
-          componentProps: { placeholder: 'XRK Server' },
-        },
-        {
-          field: 'server.host',
-          label: '监听地址',
-          bottomHelpMessage: '0.0.0.0 或 127.0.0.1',
-          component: 'Input',
-        },
-        {
-          field: 'server.url',
-          label: '外部访问 URL',
-          component: 'Input',
-        },
-        {
-          field: 'proxy.enabled',
-          label: '启用反向代理',
-          component: 'Switch',
-        },
-        {
-          field: 'https.certificate.key',
-          label: 'SSL 私钥路径',
-          component: 'Input',
-          componentProps: { placeholder: '/path/to/key.pem' },
-        },
-        {
-          field: 'https.certificate.cert',
-          label: 'SSL 证书路径',
-          component: 'Input',
-          componentProps: { placeholder: '/path/to/cert.pem' },
-        },
-        {
-          field: 'auth.apiKey.enabled',
-          label: 'API Key 认证',
-          component: 'Switch',
-        },
-        {
-          field: 'auth.uiCookie.enabled',
-          label: '同源 UI Cookie 免认证',
-          bottomHelpMessage: '与 XRK 控制台同源访问时可免 API Key',
-          component: 'Switch',
-        },
-      ]
+      schemas: serverSchemas
     },
     {
       key: 'system.redis',
@@ -262,7 +120,7 @@ const groupConfig = () => {
         addBtnText: '新增群配置',
         promptProps: addGroupPromptProps,
         schemas: [
-          ...(CfgAdapter['groupConfig'].group ?? []),
+          ...(CfgAdapter.groupConfig?.group ?? []),
           {
             field: 'addPrivate',
             label: '私聊添加',
@@ -427,72 +285,7 @@ const otherConfig = {
       key: 'system.other',
       title: '其他配置',
       desc: '其他配置',
-      schemas: [
-        ...(CfgAdapter['otherConfig'].other ?? []),
-        {
-          field: 'blackGroup',
-          label: '黑名单群',
-          bottomHelpMessage: '黑名单群，可以设置多个',
-          component: 'GSelectGroup',
-          componentProps: {
-            placeholder: '请选择黑名单群',
-          },
-        },
-        {
-          field: 'whiteGroup',
-          label: '白名单群',
-          bottomHelpMessage: '白名单群，可以设置多个',
-          component: 'GSelectGroup',
-          componentProps: {
-            placeholder: '请选择白名单群',
-          },
-        },
-        {
-          field: 'autoFriend',
-          label: '添加好友',
-          bottomHelpMessage: '是否自动同意添加好友请求',
-          component: 'Switch',
-          componentProps: {
-            checkedValue: 1,
-            unCheckedValue: 0,
-          },
-        },
-        {
-          field: 'autoQuit',
-          label: '退群人数',
-          bottomHelpMessage: '被好友拉进群时，群人数小于配置值自动退出，设为0表示不处理',
-          component: 'InputNumber',
-          componentProps: {
-            placeholder: '请输入退群人数',
-            min: 0,
-          },
-        },
-        {
-          field: 'disablePrivate',
-          label: '禁用私聊',
-          bottomHelpMessage: '禁用后私聊只接受ck以及抽卡链接（Bot主人不受限制）',
-          component: 'Switch',
-        },
-        {
-          field: 'disableMsg',
-          label: '禁私聊提示',
-          bottomHelpMessage: '禁用私聊时Bot的提示内容',
-          component: 'Input',
-          componentProps: {
-            placeholder: '请输入禁用提示',
-          },
-        },
-        {
-          field: 'disableAdopt',
-          label: '私聊通行字符串',
-          bottomHelpMessage: '禁用私聊后，允许响应的字符串',
-          component: 'GTags',
-          componentProps: {
-            allowAdd: true,
-            allowDel: true,
-          },
-        },
-      ],
+      schemas: [...(CfgAdapter.otherConfig?.other ?? [])],
     },
   ],
 }
