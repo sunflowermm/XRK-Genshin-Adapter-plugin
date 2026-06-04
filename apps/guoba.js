@@ -81,7 +81,7 @@ export class guobaApp extends plugin {
 
       const newConfig = applyPathPlaceholders(commonContent, port)
       const newSupportXrk = supportXrkContent
-      const newGlobalXrk = globalXrkContent
+      const newGlobalXrk = applyPathPlaceholders(globalXrkContent, port)
       const newMiaoConfig = supportXrkContent
 
       let hasUpdates = false

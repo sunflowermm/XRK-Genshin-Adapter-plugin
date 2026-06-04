@@ -5,8 +5,15 @@ import * as CfgAdapter from './guoba_supportxrk.js'
 import { globalConfigTab, globalConfigFile } from './guoba_globalxrk.js'
 
 const root = process.cwd()
+const configConstants = await import(pathToFileURL(path.join(root, 'lib/config/config-constants.js')).href)
 const { default: loader } = await import(pathToFileURL(path.join(root, 'lib/plugins/loader.js')).href)
+const { getServerConfigPath, getGlobalConfigPath } = configConstants
 const hasGenshin = fs.existsSync(path.join(root, 'plugins/genshin'))
+
+function resolveGuobaPort() {
+  const p = global.serverPort ?? process.argv[3]
+  return p != null && p !== '' ? p : null
+}
 
 const addGroupPromptProps = CfgAdapter.addGroupPromptProps
 
@@ -498,11 +505,11 @@ export function getConfigTabs() {
 }
 
 export const configFile = {
-  'system.bot': '${botbot}',
-  'system.group': '${botgroup}',
-  'system.redis': '${botredis}',
-  'system.other': '${botother}',
-  'system.server': '${botserver}',
+  'system.bot': getServerConfigPath(resolveGuobaPort(), 'bot'),
+  'system.group': getServerConfigPath(resolveGuobaPort(), 'group'),
+  'system.redis': getGlobalConfigPath('redis'),
+  'system.other': getServerConfigPath(resolveGuobaPort(), 'other'),
+  'system.server': getServerConfigPath(resolveGuobaPort(), 'server'),
   ...globalConfigFile,
 
   'genshin.gacha': '/plugins/genshin/config/gacha.set.yaml',

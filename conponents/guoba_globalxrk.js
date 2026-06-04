@@ -2,6 +2,12 @@
  * XRK 全局配置（device / monitor / notice / db / aistream / redis）
  * 路径与 lib/config/config-constants.js GLOBAL_CONFIG_NAMES 一致
  */
+import path from 'path'
+import { pathToFileURL } from 'url'
+
+const { getGlobalConfigPath } = await import(
+  pathToFileURL(path.join(process.cwd(), 'lib/config/config-constants.js')).href
+)
 
 export const globalConfigTab = {
   key: 'xrkGlobal',
@@ -85,11 +91,10 @@ export const globalConfigTab = {
   ]
 }
 
-/** 占位符在 guoba.js 中按端口/全局替换 */
 export const globalConfigFile = {
-  'system.device': '${globaldevice}',
-  'system.monitor': '${globalmonitor}',
-  'system.notice': '${globalnotice}',
-  'system.db': '${globaldb}',
-  'system.aistream': '${globalaistream}'
+  'system.device': getGlobalConfigPath('device'),
+  'system.monitor': getGlobalConfigPath('monitor'),
+  'system.notice': getGlobalConfigPath('notice'),
+  'system.db': getGlobalConfigPath('db'),
+  'system.aistream': getGlobalConfigPath('aistream')
 }
