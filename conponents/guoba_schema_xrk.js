@@ -1,6 +1,12 @@
 /**
  * XRK 锅巴表单字段（与 system-plugin/commonconfig/system.js、config/default_config 对齐）
- * 使用点路径绑定嵌套 YAML；复杂数组（domains/redirects）建议在 XRK 控制台编辑
+ *
+ * 锅巴可用组件（对照各插件 guoba.support.js / useConfig.js）：
+ * Input | InputNumber | InputPassword | Switch | Select | RadioGroup | Slider
+ * GTags | GSelectFriend | GSelectGroup | GSubForm
+ * Divider | SOFT_GROUP_BEGIN | EasyCron
+ * 卡片类型：keyFormCard | arrayFormCard
+ * 不支持：Textarea | MultiSelect（用 GTags 或 Select mode:multiple）
  */
 
 function sw(field, label, help = '') {
@@ -56,6 +62,83 @@ function tags(field, label, help = '') {
     componentProps: { allowAdd: true, allowDel: true },
   }
 }
+
+function multiSelect(field, label, options, help = '') {
+  return {
+    field,
+    label,
+    ...(help ? { bottomHelpMessage: help } : {}),
+    component: 'Select',
+    componentProps: {
+      mode: 'multiple',
+      allowAdd: true,
+      allowDel: true,
+      options: options.map(o =>
+        typeof o === 'string' ? { label: o, value: o } : o
+      ),
+    },
+  }
+}
+
+function subform(field, label, itemSchemas, help = '') {
+  return {
+    field,
+    label,
+    ...(help ? { bottomHelpMessage: help } : {}),
+    component: 'GSubForm',
+    componentProps: { multiple: true, schemas: itemSchemas },
+  }
+}
+
+function divider(label) {
+  return {
+    component: 'Divider',
+    label,
+    componentProps: { orientation: 'left', plain: true },
+  }
+}
+
+const proxyDomainItemSchemas = [
+  inp('domain', '域名', { placeholder: 'xrkk.cc' }),
+  inp('staticRoot', '静态根目录', { placeholder: './www' }),
+  inp('target', '目标 URL', { help: '单 URL 或 JSON 数组负载均衡' }),
+  sel('loadBalance', '负载均衡', [
+    'round-robin',
+    'weighted',
+    'least-connections',
+    'ip-hash',
+    'consistent-hash',
+    'least-response-time',
+  ]),
+  sw('ssl.enabled', '该域名启用 SSL'),
+  inp('ssl.certificate.key', '域名 SSL 私钥'),
+  inp('ssl.certificate.cert', '域名 SSL 证书'),
+  sw('preserveHostHeader', '保持 Host 头'),
+  sw('ws', 'WebSocket'),
+  num('timeout', '代理超时(ms)', { min: 1000 }),
+]
+
+const redirectItemSchemas = [
+  inp('from', '源路径', { placeholder: '/old-path' }),
+  inp('to', '目标路径', { placeholder: '/new-path' }),
+  sel('status', '状态码', [
+    { label: '301', value: 301 },
+    { label: '302', value: 302 },
+    { label: '307', value: 307 },
+    { label: '308', value: 308 },
+  ]),
+  sw('preserveQuery', '保留查询参数'),
+  inp('condition', '条件表达式', { help: '可选 JS 表达式' }),
+]
+
+const mcpServerItemSchemas = [
+  inp('name', '名称', { placeholder: '唯一标识' }),
+  inp('command', '命令(stdio)', { placeholder: 'npx' }),
+  tags('args', '命令参数'),
+  inp('url', 'HTTP URL'),
+  sel('transport', '传输', ['http', 'sse', 'websocket']),
+  inp('config', '原生 JSON', { help: '完整配置 JSON，优先级高于分项' }),
+]
 
 /** bot.yaml 全字段 */
 export const botSchemas = [
@@ -113,8 +196,18 @@ export const groupExtraSchemas = [
   tags('bannedWords.exemptRoles', '违禁词免检角色', '如 owner、admin'),
 ]
 
+/** redis.yaml */
+export const redisSchemas = [
+  inp('host', 'Redis 地址', { placeholder: '127.0.0.1' }),
+  num('port', 'Redis 端口', { min: 1, max: 65535 }),
+  inp('username', 'Redis 用户名', { help: '无认证可留空' }),
+  inp('password', 'Redis 密码', { password: true }),
+  num('db', '数据库索引', { min: 0, max: 15 }),
+]
+
 /** server.yaml 常用字段（点路径） */
 export const serverSchemas = [
+  divider('基础与代理'),
   inp('server.name', '服务器名称', { placeholder: 'XRK Server' }),
   inp('server.host', '监听地址', { help: '0.0.0.0 或 127.0.0.1', placeholder: '0.0.0.0' }),
   inp('server.url', '外部访问 URL', { help: '留空自动检测' }),
@@ -126,6 +219,13 @@ export const serverSchemas = [
   num('proxy.healthCheck.maxFailures', '健康检查最大失败次数', { min: 1 }),
   num('proxy.healthCheck.timeout', '健康检查超时(ms)', { min: 1000 }),
   num('proxy.healthCheck.cacheTime', '健康检查结果缓存(ms)', { min: 0 }),
+  subform(
+    'proxy.domains',
+    '反向代理域名列表',
+    proxyDomainItemSchemas,
+    '可添加多条；通配符/复杂 pathRewrite 等见 XRK 控制台'
+  ),
+  divider('HTTPS / 静态 / 安全'),
   sw('https.enabled', '启用 HTTPS'),
   inp('https.certificate.key', 'SSL 私钥路径', { placeholder: '/path/to/key.pem' }),
   inp('https.certificate.cert', 'SSL 证书路径', { placeholder: '/path/to/cert.pem' }),
@@ -137,14 +237,26 @@ export const serverSchemas = [
   sw('https.hsts.includeSubDomains', 'HSTS 包含子域名'),
   sw('https.hsts.preload', 'HSTS 允许预加载'),
   sw('static.extensions', '静态文件自动扩展名'),
+  tags('static.index', '默认首页文件', '如 index.html'),
   num('static.cache.static', '静态资源缓存(秒)', { min: 0 }),
   num('static.cache.images', '图片缓存(秒)', { min: 0 }),
   inp('static.cacheTime', '静态默认缓存时长', { help: '如 1d、1h', placeholder: '1d' }),
   sw('security.helmet.enabled', '启用 Helmet 安全头'),
   tags('security.hiddenFiles', '隐藏文件模式', '匹配则返回 404'),
+  sw('security.hsts.enabled', 'Security HSTS'),
+  num('security.hsts.maxAge', 'Security HSTS 有效期(秒)', { min: 0 }),
+  divider('CORS / 认证 / 限流'),
   sw('cors.enabled', '启用 CORS'),
   tags('cors.origins', 'CORS 允许来源'),
-  tags('cors.methods', 'CORS 允许方法'),
+  multiSelect('cors.methods', 'CORS 允许方法', [
+    'GET',
+    'POST',
+    'PUT',
+    'DELETE',
+    'OPTIONS',
+    'PATCH',
+    'HEAD',
+  ]),
   tags('cors.headers', 'CORS 允许请求头'),
   sw('cors.credentials', 'CORS 允许凭证'),
   num('cors.maxAge', 'CORS 预检缓存(秒)', { min: 0 }),
@@ -196,20 +308,7 @@ export const serverSchemas = [
   num('performance.connectionPool.timeout', '连接池超时(ms)', { min: 1000 }),
   sw('misc.detectPublicIP', '自动检测公网 IP'),
   inp('misc.defaultRoute', '404 默认重定向', { placeholder: '/' }),
-  {
-    field: 'proxy.domains',
-    label: '反向代理域名列表',
-    bottomHelpMessage: '复杂域名/负载均衡建议在 XRK 控制台（commonconfig）用 ArrayForm 编辑；此处可留空由 YAML 手改',
-    component: 'Textarea',
-    componentProps: { rows: 4, placeholder: '[]' },
-  },
-  {
-    field: 'redirects',
-    label: 'HTTP 重定向规则',
-    bottomHelpMessage: 'JSON 数组；复杂规则建议在 XRK 控制台编辑',
-    component: 'Textarea',
-    componentProps: { rows: 3, placeholder: '[]' },
-  },
+  subform('redirects', 'HTTP 重定向规则', redirectItemSchemas, '可添加多条重定向'),
 ]
 
 /** monitor.yaml 全字段 */
@@ -273,7 +372,7 @@ export const aistreamSchemas = [
   sw('llm.retry.enabled', 'LLM 启用重试'),
   num('llm.retry.maxAttempts', 'LLM 最大重试次数', { min: 1, max: 10 }),
   num('llm.retry.delay', 'LLM 重试延迟(ms)', { min: 100 }),
-  tags('llm.retry.retryOn', 'LLM 重试条件', 'timeout / network / 5xx / all'),
+  multiSelect('llm.retry.retryOn', 'LLM 重试条件', ['timeout', 'network', '5xx', 'all']),
   sel('asr.Provider', 'ASR 运营商', ['volcengine']),
   sel('tts.Provider', 'TTS 运营商', ['volcengine']),
   sw('tts.onlyForASR', 'TTS 仅 ASR 触发'),
@@ -282,11 +381,5 @@ export const aistreamSchemas = [
   sw('mcp.autoRegister', 'MCP 自动注册工具'),
   sw('mcp.remote.enabled', '启用远程 MCP'),
   tags('mcp.remote.selected', '已选远程 MCP 服务器'),
-  {
-    field: 'mcp.remote.servers',
-    label: '远程 MCP 服务器定义',
-    bottomHelpMessage: '复杂 MCP 建议在 XRK 控制台编辑；可填 JSON 数组',
-    component: 'Textarea',
-    componentProps: { rows: 4, placeholder: '[]' },
-  },
+  subform('mcp.remote.servers', '远程 MCP 服务器', mcpServerItemSchemas),
 ]

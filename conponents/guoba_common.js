@@ -3,7 +3,7 @@ import fs from 'fs'
 import { pathToFileURL } from 'url'
 import * as CfgAdapter from './guoba_supportxrk.js'
 import { globalConfigTab, globalConfigFile } from './guoba_globalxrk.js'
-import { serverSchemas } from './guoba_schema_xrk.js'
+import { serverSchemas, redisSchemas } from './guoba_schema_xrk.js'
 
 const root = process.cwd()
 const configConstants = await import(pathToFileURL(path.join(root, 'lib/config/config-constants.js')).href)
@@ -39,56 +39,7 @@ const baseConfig = {
       key: 'system.redis',
       title: 'Redis配置',
       desc: '对Redis服务器进行相关配置',
-      schemas: [
-        {
-          field: 'host',
-          label: 'Redis地址',
-          required: true,
-          component: 'Input',
-          componentProps: {
-            placeholder: '请输入Redis地址',
-          },
-        },
-        {
-          field: 'port',
-          label: 'Redis端口',
-          required: true,
-          component: 'InputNumber',
-          componentProps: {
-            placeholder: '请输入Redis端口',
-            min: 1,
-            max: 65535,
-          },
-        },
-        {
-          field: 'username',
-          label: 'Redis用户名',
-          bottomHelpMessage: '没有用户名可以为空',
-          component: 'Input',
-          componentProps: {
-            placeholder: '请输入Redis用户名',
-          },
-        },
-        {
-          field: 'password',
-          label: 'Redis密码',
-          bottomHelpMessage: '没有密码可以为空',
-          component: 'InputPassword',
-          componentProps: {
-            placeholder: '请输入Redis密码',
-          },
-        },
-        {
-          field: 'db',
-          label: 'Redis数据库',
-          required: true,
-          bottomHelpMessage: '一般不用改',
-          component: 'InputNumber',
-          componentProps: {
-            placeholder: '请输入Redis数据库',
-          },
-        },
-      ],
+      schemas: redisSchemas,
     },
   ],
 }

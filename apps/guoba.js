@@ -11,7 +11,6 @@ const pluginRoot = path.resolve(__dirname, '..')
 
 const GUOBA_MODEL_DIR = 'plugins/guoba-plugin/server/service/v3/config/model'
 const GUOBA_USE_CONFIG = `${GUOBA_MODEL_DIR}/useConfig.js`
-const GUOBA_USE_MIAO = `${GUOBA_MODEL_DIR}/useMiaoConfig.js`
 const GUOBA_SUPPORT_XRK = `${GUOBA_MODEL_DIR}/guoba_supportxrk.js`
 const GUOBA_GLOBAL_XRK = `${GUOBA_MODEL_DIR}/guoba_globalxrk.js`
 const GUOBA_SCHEMA_XRK = `${GUOBA_MODEL_DIR}/guoba_schema_xrk.js`
@@ -55,7 +54,6 @@ export class guobaApp extends plugin {
   async updateGuobaConfig(botUin, e, mode = 'standard', port = null) {
     try {
       const configPath = path.join(process.cwd(), GUOBA_USE_CONFIG)
-      const miaoConfigPath = path.join(process.cwd(), GUOBA_USE_MIAO)
       const supportDestPath = path.join(process.cwd(), GUOBA_SUPPORT_XRK)
       const globalDestPath = path.join(process.cwd(), GUOBA_GLOBAL_XRK)
       const schemaDestPath = path.join(process.cwd(), GUOBA_SCHEMA_XRK)
@@ -85,8 +83,7 @@ export class guobaApp extends plugin {
 
       const newConfig = applyPathPlaceholders(commonContent, port)
       const newSupportXrk = supportXrkContent
-      const newGlobalXrk = applyPathPlaceholders(globalXrkContent, port)
-      const newMiaoConfig = supportXrkContent
+      const newGlobalXrk = globalXrkContent
 
       let hasUpdates = false
       const syncFile = async (destPath, content) => {
@@ -100,9 +97,6 @@ export class guobaApp extends plugin {
       await syncFile(supportDestPath, newSupportXrk)
       await syncFile(globalDestPath, newGlobalXrk)
       await syncFile(schemaDestPath, schemaXrkContent)
-      if (FileUtils.existsSync(miaoConfigPath)) {
-        await syncFile(miaoConfigPath, newMiaoConfig)
-      }
 
       if (hasUpdates) {
         await e.reply(`锅巴配置已同步（XRK 系统字段）。账号 ${botUin}，请重启 Bot；向日葵插件配置在锅巴左侧「向日葵插件」或 XRK 控制台。`, true)
