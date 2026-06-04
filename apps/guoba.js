@@ -58,9 +58,11 @@ export class guobaApp extends plugin {
       const miaoConfigPath = path.join(process.cwd(), GUOBA_USE_MIAO)
       const supportDestPath = path.join(process.cwd(), GUOBA_SUPPORT_XRK)
       const globalDestPath = path.join(process.cwd(), GUOBA_GLOBAL_XRK)
+      const schemaDestPath = path.join(process.cwd(), GUOBA_SCHEMA_XRK)
       const commonPath = path.join(pluginRoot, 'conponents/guoba_common.js')
       const supportXrkPath = path.join(pluginRoot, 'conponents/guoba_supportxrk.js')
       const globalXrkPath = path.join(pluginRoot, 'conponents/guoba_globalxrk.js')
+      const schemaXrkPath = path.join(pluginRoot, 'conponents/guoba_schema_xrk.js')
 
       if (!FileUtils.existsSync(configPath)) {
         await e.reply(
