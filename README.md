@@ -4,7 +4,7 @@
 
 ## 功能
 
-- **锅巴配置同步**：`#锅巴登录` 将本插件内的锅巴模板写入 `guoba-plugin` 的 `useConfig.js` / `useMiaoConfig.js`。
+- **锅巴配置同步**：`#锅巴登录` 将 `conponents/` 下三个模板写入 `guoba-plugin/server/service/v3/config/model/`（`useConfig.js`、`guoba_supportxrk.js`、`guoba_globalxrk.js`；兼容旧版时同步 `useMiaoConfig.js`）。
 - **XRK 全量字段**：端口级 `bot` / `group` / `other` / `server`、全局 `redis` / `device` / `monitor` / `notice` / `db` / `aistream`，路径与 `lib/config/config-constants.js` 一致。
 - **向日葵插件**：在 `plugins/XRK-plugin/guoba.support.js` 中声明 `supportGuoba()`，由锅巴自动扫描；勿在适配器里重复写向日葵配置。
 

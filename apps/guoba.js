@@ -9,14 +9,16 @@ import {
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const pluginRoot = path.resolve(__dirname, '..')
 
-const GUOBA_USE_CONFIG = 'plugins/guoba-plugin/server/service/v3/config/model/useConfig.js'
-const GUOBA_USE_MIAO = 'plugins/guoba-plugin/server/service/v3/config/model/useMiaoConfig.js'
+const GUOBA_MODEL_DIR = 'plugins/guoba-plugin/server/service/v3/config/model'
+const GUOBA_USE_CONFIG = `${GUOBA_MODEL_DIR}/useConfig.js`
+const GUOBA_USE_MIAO = `${GUOBA_MODEL_DIR}/useMiaoConfig.js`
+const GUOBA_SUPPORT_XRK = `${GUOBA_MODEL_DIR}/guoba_supportxrk.js`
+const GUOBA_GLOBAL_XRK = `${GUOBA_MODEL_DIR}/guoba_globalxrk.js`
 
 function applyPathPlaceholders(content, port) {
   const p = port ?? global.serverPort ?? process.argv[3]
   return content
     .replace(/\$\{botbot\}/g, getServerConfigPath(p, 'bot'))
-    .replace(/\$\{botqq\}/g, getServerConfigPath(p, 'qq'))
     .replace(/\$\{botgroup\}/g, getServerConfigPath(p, 'group'))
     .replace(/\$\{botother\}/g, getServerConfigPath(p, 'other'))
     .replace(/\$\{botserver\}/g, getServerConfigPath(p, 'server'))
@@ -53,8 +55,11 @@ export class guobaApp extends plugin {
     try {
       const configPath = path.join(process.cwd(), GUOBA_USE_CONFIG)
       const miaoConfigPath = path.join(process.cwd(), GUOBA_USE_MIAO)
+      const supportDestPath = path.join(process.cwd(), GUOBA_SUPPORT_XRK)
+      const globalDestPath = path.join(process.cwd(), GUOBA_GLOBAL_XRK)
       const commonPath = path.join(pluginRoot, 'conponents/guoba_common.js')
       const supportXrkPath = path.join(pluginRoot, 'conponents/guoba_supportxrk.js')
+      const globalXrkPath = path.join(pluginRoot, 'conponents/guoba_globalxrk.js')
 
       if (!FileUtils.existsSync(configPath)) {
         await e.reply(
@@ -64,27 +69,34 @@ export class guobaApp extends plugin {
         return
       }
 
-      const commonContent = await FileUtils.readFile(commonPath, 'utf8')
-      const supportXrkContent = await FileUtils.readFile(supportXrkPath, 'utf8')
-      if (!commonContent || !supportXrkContent) {
+      const [commonContent, supportXrkContent, globalXrkContent] = await Promise.all([
+        FileUtils.readFile(commonPath, 'utf8'),
+        FileUtils.readFile(supportXrkPath, 'utf8'),
+        FileUtils.readFile(globalXrkPath, 'utf8')
+      ])
+      if (!commonContent || !supportXrkContent || !globalXrkContent) {
         await e.reply('读取锅巴模板失败，请检查适配器 conponents 目录是否完整', true)
         return
       }
 
       const newConfig = applyPathPlaceholders(commonContent, port)
-      const newMiaoConfig = applyPathPlaceholders(supportXrkContent, port)
+      const newSupportXrk = supportXrkContent
+      const newGlobalXrk = globalXrkContent
+      const newMiaoConfig = supportXrkContent
 
       let hasUpdates = false
-      const oldConfig = await FileUtils.readFile(configPath, 'utf8').catch(() => '')
-      if (newConfig !== oldConfig) {
-        await FileUtils.writeFile(configPath, newConfig, 'utf8')
-        hasUpdates = true
+      const syncFile = async (destPath, content) => {
+        const old = await FileUtils.readFile(destPath, 'utf8').catch(() => '')
+        if (content !== old) {
+          await FileUtils.writeFile(destPath, content, 'utf8')
+          hasUpdates = true
+        }
       }
-
-      const oldMiaoConfig = await FileUtils.readFile(miaoConfigPath, 'utf8').catch(() => '')
-      if (newMiaoConfig !== oldMiaoConfig) {
-        await FileUtils.writeFile(miaoConfigPath, newMiaoConfig, 'utf8')
-        hasUpdates = true
+      await syncFile(configPath, newConfig)
+      await syncFile(supportDestPath, newSupportXrk)
+      await syncFile(globalDestPath, newGlobalXrk)
+      if (FileUtils.existsSync(miaoConfigPath)) {
+        await syncFile(miaoConfigPath, newMiaoConfig)
       }
 
       if (hasUpdates) {

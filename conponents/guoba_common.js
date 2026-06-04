@@ -1,10 +1,12 @@
 import path from 'path'
-import loader from '../../../../lib/plugins/loader.js'
-import { FileUtils } from '../../../../lib/utils/file-utils.js'
+import fs from 'fs'
+import { pathToFileURL } from 'url'
 import * as CfgAdapter from './guoba_supportxrk.js'
 import { globalConfigTab, globalConfigFile } from './guoba_globalxrk.js'
 
-const hasGenshin = FileUtils.existsSync(path.join(process.cwd(), 'plugins/genshin'))
+const root = process.cwd()
+const { default: loader } = await import(pathToFileURL(path.join(root, 'lib/plugins/loader.js')).href)
+const hasGenshin = fs.existsSync(path.join(root, 'plugins/genshin'))
 
 const addGroupPromptProps = CfgAdapter.addGroupPromptProps
 
@@ -32,7 +34,8 @@ const baseConfig = {
               { label: 'Fatal', value: 'fatal' },
               { label: 'Mark', value: 'mark' },
               { label: 'Error', value: 'error' },
-              { label: 'Off', value: 'off' },
+              { label: 'Success', value: 'success' },
+              { label: 'Tip', value: 'tip' },
             ],
             placeholder: '请选择日志等级',
           },
@@ -104,15 +107,6 @@ const baseConfig = {
             placeholder: '（毫秒）',
           },
         },
-        {
-          field: 'proxyAddress',
-          label: '代理地址',
-          bottomHelpMessage: '米游社接口代理地址，国际服用',
-          component: 'Input',
-          componentProps: {
-            placeholder: '请输入米游社代理地址',
-          },
-        },
       ],
     },
     {
@@ -164,15 +158,15 @@ const baseConfig = {
           componentProps: { placeholder: '/path/to/cert.pem' },
         },
         {
-          field: 'auth',
-          label: '认证配置',
-          bottomHelpMessage: '用于HTTP请求的认证，如果不配置或配置为空对象，则跳过认证',
-          component: 'GTags',
-          componentProps: {
-            allowAdd: true,
-            allowDel: true,
-            placeholder: '格式为 "键:值"，例如 "Authorization:Bearer your-token"',
-          },
+          field: 'auth.apiKey.enabled',
+          label: 'API Key 认证',
+          component: 'Switch',
+        },
+        {
+          field: 'auth.uiCookie.enabled',
+          label: '同源 UI Cookie 免认证',
+          bottomHelpMessage: '与 XRK 控制台同源访问时可免 API Key',
+          component: 'Switch',
         },
       ]
     },
@@ -505,7 +499,6 @@ export function getConfigTabs() {
 
 export const configFile = {
   'system.bot': '${botbot}',
-  'system.qq': '${botqq}',
   'system.group': '${botgroup}',
   'system.redis': '${botredis}',
   'system.other': '${botother}',
