@@ -4,7 +4,7 @@
  */
 import path from 'path'
 import { pathToFileURL } from 'url'
-import { monitorSchemas, aistreamSchemas } from './guoba_schema_xrk.js'
+import { monitorSchemas, aiWorkflowSchemas } from './guoba_schema_xrk.js'
 
 const { getGlobalConfigPath } = await import(
   pathToFileURL(path.join(process.cwd(), 'lib/config/config-constants.js')).href
@@ -37,8 +37,8 @@ export const globalConfigTab = {
     {
       key: 'system.aistream',
       title: 'AI 工作流',
-      desc: '工作流总开关与全局参数（data/server_bots/aistream.yaml）',
-      schemas: aistreamSchemas
+      desc: '工作流总开关与全局参数（data/server_bots/ai-workflow.yaml）',
+      schemas: aiWorkflowSchemas
     },
     {
       key: 'system.notice',
@@ -68,5 +68,5 @@ export const globalConfigFile = {
   'system.monitor': getGlobalConfigPath('monitor'),
   'system.notice': getGlobalConfigPath('notice'),
   'system.db': getGlobalConfigPath('db'),
-  'system.aistream': getGlobalConfigPath('aistream')
+  'system.aistream': getGlobalConfigPath('ai-workflow')
 }

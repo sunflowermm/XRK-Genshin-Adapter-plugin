@@ -27,7 +27,7 @@ function applyPathPlaceholders(content, port) {
     .replace(/\$\{globalmonitor\}/g, getGlobalConfigPath('monitor'))
     .replace(/\$\{globalnotice\}/g, getGlobalConfigPath('notice'))
     .replace(/\$\{globaldb\}/g, getGlobalConfigPath('db'))
-    .replace(/\$\{globalaistream\}/g, getGlobalConfigPath('aistream'))
+    .replace(/\$\{globalaistream\}/g, getGlobalConfigPath('ai-workflow'))
 }
 
 export class guobaApp extends plugin {

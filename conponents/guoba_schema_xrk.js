@@ -352,10 +352,10 @@ export const monitorSchemas = [
   sw('system.optimizeCPU', '优化 CPU 调度'),
 ]
 
-/** aistream.yaml 全字段 */
-export const aistreamSchemas = [
+/** ai-workflow.yaml 全字段 */
+export const aiWorkflowSchemas = [
   sw('enabled', '启用工作流'),
-  inp('streamDir', '工作流目录', { help: '兼容保留；实际从各插件 stream/ 加载' }),
+  inp('streamDir', '工作流目录', { help: '兼容保留；实际从各插件 workflow/ 加载' }),
   num('global.maxTimeout', '最大执行超时(ms)', { min: 1000 }),
   sw('global.debug', '工作流调试日志'),
   num('global.maxConcurrent', '最大并发', { min: 1 }),
